@@ -2,6 +2,32 @@ var http = require("http")
 var winston = require("winston")
 var AWS = require("aws-sdk")
 
+var hostname = process.env.HOSTNAME
+
+logger.rewriters.push(function(level, msg, meta) {
+  meta.version = version
+  meta.hostname = hostname
+  meta.appname = "helloworld"
+  return meta
+})
+
+var logger = new winston.Logger({
+  transports: [new winston.transports.Console({
+    timestamp: function() {
+       var d = new Date();
+       return d.toISOString()
+    },
+  })]
+})
+
+var logger = new (winston.Logger)({
+  transports: [new WFirehose({
+    'streamName': 'FirehoseLogs',
+    'firehoseOptions': {
+      'region': 'us-east-1'
+    }
+  })]
+})
 AWS.config.update({region:"us-east-1"})
 
 var cwevents = new AWS.CloudWatchEvents({apiVersion: "2015-10-07"}) 
